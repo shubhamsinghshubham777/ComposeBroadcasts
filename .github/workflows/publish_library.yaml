@@ -1,4 +1,4 @@
-name: Publish
+name: Publish Library
 on:
   workflow_dispatch:
     inputs:
@@ -7,8 +7,8 @@ on:
         required: true
 
 jobs:
-  publish:
-    name: Publish
+  publish_library:
+    name: Publish Library on Maven Central
     runs-on: ubuntu-latest
 
     steps:
