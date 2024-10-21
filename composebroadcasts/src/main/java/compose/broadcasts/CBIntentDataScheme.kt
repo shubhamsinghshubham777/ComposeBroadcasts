@@ -15,6 +15,14 @@
 
 package compose.broadcasts
 
+/**
+ * An object of CBIntentDataScheme is added to a [CBIntentFilter] object along with an object of
+ * [CBIntentDataType] to further specify precisely what kind of data the user needs filtered.
+ *
+ * For example the value `package` is used in case of [CBIntentAction.PackageAdded],
+ * [CBIntentAction.PackageRemoved], and [CBIntentAction.PackageReplaced] instances.
+ */
 sealed class CBIntentDataScheme(val rawValue: String) {
     data object Package : CBIntentDataScheme("package")
+    data class Custom(val value: String) : CBIntentDataScheme(value)
 }

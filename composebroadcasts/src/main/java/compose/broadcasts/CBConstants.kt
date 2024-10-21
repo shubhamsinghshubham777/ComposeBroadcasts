@@ -15,15 +15,12 @@
 
 package compose.broadcasts
 
-import android.graphics.drawable.Drawable
-
-/**
- * A CBInputMethodInfo object depicts a particular input method's basic details like its name,
- * package name, full qualifier name, and icon of the app it belongs to.
- */
-data class CBInputMethodInfo(
-    val name: String,
-    val packageName: String,
-    val fullQualifier: String,
-    val appIcon: Drawable
-)
+internal enum class CBConstants(val value: String) {
+    AIRPLANE_MODE("airplane_mode"),
+    BATTERY_LEVEL("battery_level"),
+    IS_CHARGING("is_charging"),
+    CURRENT_TIME_MILLIS("current_time_millis"),
+    IS_SCREEN_ON("is_screen_on"),
+    HEADSET_INFO("headset_info"),
+    INPUT_METHOD("input_method"),
+}

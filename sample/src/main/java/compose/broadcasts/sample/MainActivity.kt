@@ -33,13 +33,13 @@ import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
 import compose.broadcasts.rememberBatteryLevel
 import compose.broadcasts.rememberCurrentInputMethod
-import compose.broadcasts.rememberCurrentLocale
 import compose.broadcasts.rememberCurrentTimeMillis
 import compose.broadcasts.rememberIsAirplaneModeOn
 import compose.broadcasts.rememberIsCharging
 import compose.broadcasts.rememberIsHeadsetConnected
 import compose.broadcasts.rememberIsScreenOn
 import compose.broadcasts.rememberPackageInfo
+import compose.broadcasts.rememberSystemLocale
 import compose.broadcasts.sample.ui.theme.ComposeBroadcastsTheme
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -111,7 +111,7 @@ class MainActivity : ComponentActivity() {
                         // Current System Local
                         Text(
                             "Current System Locale: " +
-                                    rememberCurrentLocale(localeReceiver).value.toLanguageTag()
+                                    rememberSystemLocale(localeReceiver).value.toLanguageTag()
                         )
 
                         // Screen ON/OFF state

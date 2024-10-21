@@ -15,6 +15,10 @@
 
 package compose.broadcasts
 
+/**
+ * An object of CBIntentFilter depicts the user's request from a [CBBroadcastReceiver] to filter out
+ * a specific data type and scheme of content that has a specific trigger action.
+ */
 data class CBIntentFilter(
     val action: CBIntentAction,
     val dataType: CBIntentDataType? = null,

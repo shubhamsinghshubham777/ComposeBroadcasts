@@ -24,6 +24,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 
+/**
+ * A drop-in replacement for Android's [BroadcastReceiver]s that allows users to easily create
+ * custom broadcast receivers with the Compose Broadcasts set of APIs.
+ *
+ * @param tag The class accepts a unique string value that it uses to identify different instances
+ * of [CBBroadcastReceiver]s while trying to fetch its configuration-persisted data. Please make
+ * sure to always use a unique `tag` for all your custom CBBroadcastReceiver instances to avoid
+ * seeing any unforeseen state/value mismatches.
+ */
 open class CBBroadcastReceiver(internal val tag: String) : BroadcastReceiver(), CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.Default
 

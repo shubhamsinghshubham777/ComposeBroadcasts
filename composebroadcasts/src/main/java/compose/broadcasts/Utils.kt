@@ -24,10 +24,17 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 
+/**
+ * Convenience extension variable that returns if the given string is an already used tag keyword
+ * in the `Compose Broadcasts` library. Make sure to NOT use a string as the `tag` of your custom
+ * [CBBroadcastReceiver] class if this value comes out to be `true` for that tag.
+ */
+val String.isLibraryTag: Boolean get() = CBConstants.entries.map { it.value }.contains(this)
+
 internal const val LOG_TAG = "COMPOSE_BROADCASTS"
 
 @Composable
-fun rememberCurrentLifecycleState(): State<Lifecycle.State> {
+internal fun rememberCurrentLifecycleState(): State<Lifecycle.State> {
     val lifecycleOwner = LocalLifecycleOwner.current
     val lifecycleState = remember { mutableStateOf(lifecycleOwner.lifecycle.currentState) }
 

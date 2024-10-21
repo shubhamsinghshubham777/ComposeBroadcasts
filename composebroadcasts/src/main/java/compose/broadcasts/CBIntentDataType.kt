@@ -15,6 +15,10 @@
 
 package compose.broadcasts
 
+/**
+ * An object of CBIntentDataType is added to a [CBIntentFilter] object along with an object of
+ * [CBIntentDataScheme] to further specify precisely what kind of data the user needs filtered.
+ */
 sealed class CBIntentDataType(internal val rawValue: String) {
     data class Custom(val value: String) : CBIntentDataType(value)
 }

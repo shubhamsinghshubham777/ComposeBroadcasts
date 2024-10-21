@@ -16,7 +16,21 @@
 package compose.broadcasts
 
 import android.content.Intent
+import compose.broadcasts.CBIntentAction.Custom
 
+/**
+ * A CBIntentAction depicts the type of event a user would want to filter his broadcast receiver's
+ * emitted intents for.
+ *
+ * Some examples are: `AirplaneModeChanged`, `BatteryChanged`, `LocaleChanged`,
+ * and many more. The ones that are mentioned in this list are the ones for which this library has
+ * created util functions for.
+ *
+ * For the ones that are not listed yet, the user can make use of the [Custom] action and provide
+ * it with his own `Intent.ACTION_*` value (where `*` can be any valid action intent like
+ * `Intent.ACTION_APP_ERROR`, `Intent.ACTION_ASSIST`, `Intent.ACTION_ATTACH_DATA`,
+ * `Intent.ACTION_CALL`, and many more).
+ */
 sealed class CBIntentAction(val rawValue: String) {
     data object AirplaneModeChanged : CBIntentAction(Intent.ACTION_AIRPLANE_MODE_CHANGED)
     data object BatteryChanged : CBIntentAction(Intent.ACTION_BATTERY_CHANGED)
