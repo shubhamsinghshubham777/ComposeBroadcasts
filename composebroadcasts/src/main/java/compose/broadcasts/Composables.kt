@@ -252,9 +252,15 @@ private fun fetchIsHeadsetConnected(audioManager: AudioManager): Boolean {
                     device.type == AudioDeviceInfo.TYPE_BLE_HEADSET
                 } else false
 
+                val isBLESpeaker = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    device.type == AudioDeviceInfo.TYPE_BLE_SPEAKER
+                } else false
+
                 return@filter device.type == AudioDeviceInfo.TYPE_WIRED_HEADSET
+                        || device.type == AudioDeviceInfo.TYPE_WIRED_HEADPHONES
                         || hasBluetoothHeadset
                         || hasUsbHeadset
+                        || isBLESpeaker
             }
             .isNotEmpty()
     } else {
