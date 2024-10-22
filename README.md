@@ -1,11 +1,11 @@
 <!--suppress CheckImageSize -->
-<h1 style="text-align:center">Compose Broadcasts</h1>
+<h1 align="center">Compose Broadcasts</h1>
 
-<p style="text-align:center">
+<p align="center">
     <img src="assets/logo.webp" width=250 alt="Compose Broadcasts Logo" />
 </p>
 
-<p style="text-align:center">
+<p align="center">
     <img src="https://img.shields.io/badge/Jetpack%20Compose-purple?style=for-the-badge" alt="Compose Badge" />
     <img src="https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Android Badge" />
     <img src="https://img.shields.io/badge/Kotlin-0095D5?&style=for-the-badge&logo=kotlin&logoColor=white" alt="Kotlin Badge" />
