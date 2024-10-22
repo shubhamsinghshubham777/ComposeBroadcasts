@@ -21,8 +21,10 @@ import android.util.Log
 import compose.broadcasts.CBBroadcastReceiver
 import java.util.Locale
 
-class LocaleReceiver : CBBroadcastReceiver("current_locale_receiver") {
+class LocaleReceiver : CBBroadcastReceiver(tag = "current_locale_receiver") {
     override fun onReceive(context: Context?, intent: Intent?) {
+        // It is important to call `super.onReceive` for the library to do its job. Ideally, you
+        // should write all your custom logic inside the composable's `mapToState` lambda.
         super.onReceive(context, intent)
         if (intent?.action == Intent.ACTION_LOCALE_CHANGED) {
             Log.d("SAMPLE_APP", "New locale: ${Locale.getDefault().toLanguageTag()}")

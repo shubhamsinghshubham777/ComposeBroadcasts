@@ -28,12 +28,26 @@ import kotlin.coroutines.CoroutineContext
  * A drop-in replacement for Android's [BroadcastReceiver]s that allows users to easily create
  * custom broadcast receivers with the Compose Broadcasts set of APIs.
  *
+ * > **Note**: In case you're creating an instance of this class, it is important to know that
+ * calling `super.onReceive` is important for the library to be able to do its job. Ideally, you
+ * should write all your custom logic inside the composable's `mapToState` lambda and not override
+ * `onReceive` of this class at all.
+ *
  * @param tag The class accepts a unique string value that it uses to identify different instances
  * of [CBBroadcastReceiver]s while trying to fetch its configuration-persisted data. Please make
  * sure to always use a unique `tag` for all your custom CBBroadcastReceiver instances to avoid
  * seeing any unforeseen state/value mismatches.
+ *
+ * @throws IllegalStateException if a pre-existing tag is used. Use [String.isComposeBroadcastsTag]
+ * util extension to check if your tag is already used by the library.
  */
 open class CBBroadcastReceiver(internal val tag: String) : BroadcastReceiver(), CoroutineScope {
+    internal var isLibraryProvidedTag: Boolean = false
+
+    internal constructor(tag: String, isLibraryProvidedTag: Boolean) : this(tag) {
+        this.isLibraryProvidedTag = isLibraryProvidedTag
+    }
+
     override val coroutineContext: CoroutineContext = Dispatchers.Default
 
     override fun onReceive(context: Context?, intent: Intent?) {

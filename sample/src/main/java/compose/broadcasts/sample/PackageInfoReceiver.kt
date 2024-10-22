@@ -17,4 +17,4 @@ package compose.broadcasts.sample
 
 import compose.broadcasts.CBBroadcastReceiver
 
-class PackageInfoReceiver : CBBroadcastReceiver("package_info")
+class PackageInfoReceiver : CBBroadcastReceiver(tag = "package_info")

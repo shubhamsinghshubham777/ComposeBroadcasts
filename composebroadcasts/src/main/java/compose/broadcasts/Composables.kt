@@ -71,6 +71,13 @@ fun <T> rememberBroadcastReceiverAsState(
     receiverExported: Boolean = false,
     mapToState: (Context, Intent) -> T,
 ): State<T> {
+    if (!broadcastReceiver.isLibraryProvidedTag) {
+        check(!broadcastReceiver.tag.isComposeBroadcastsTag) {
+            "The provided `tag` value (${broadcastReceiver.tag}) is already in-use by a " +
+                    "library-provided function. Please choose another unique tag."
+        }
+    }
+
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val currentLifecycleState by rememberCurrentLifecycleState()
@@ -136,7 +143,10 @@ fun rememberIsAirplaneModeOn(): State<Boolean> {
             Settings.Global.AIRPLANE_MODE_ON
         ) != 0,
         intentFilters = listOf(CBIntentFilter(action = CBIntentAction.AirplaneModeChanged)),
-        broadcastReceiver = CBBroadcastReceiver(CBConstants.AIRPLANE_MODE.value),
+        broadcastReceiver = CBBroadcastReceiver(
+            tag = CBConstants.AIRPLANE_MODE.value,
+            isLibraryProvidedTag = true,
+        ),
     ) { receiverContext, _ ->
         Settings.Global.getInt(
             receiverContext.contentResolver,
@@ -155,7 +165,10 @@ fun rememberIsAirplaneModeOn(): State<Boolean> {
 fun rememberBatteryLevel(): State<Int> = rememberBroadcastReceiverAsState(
     initialValue = fetchBatteryLevel(LocalContext.current),
     intentFilters = listOf(CBIntentFilter(action = CBIntentAction.BatteryChanged)),
-    broadcastReceiver = CBBroadcastReceiver(CBConstants.BATTERY_LEVEL.value),
+    broadcastReceiver = CBBroadcastReceiver(
+        tag = CBConstants.BATTERY_LEVEL.value,
+        isLibraryProvidedTag = true,
+    ),
 ) { _, intent ->
     val level: Int = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
     val scale: Int = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
@@ -179,7 +192,10 @@ private fun fetchBatteryLevel(context: Context): Int {
 fun rememberIsCharging(): State<Boolean> = rememberBroadcastReceiverAsState(
     initialValue = fetchIsCharging(LocalContext.current),
     intentFilters = listOf(CBIntentFilter(CBIntentAction.BatteryChanged)),
-    broadcastReceiver = CBBroadcastReceiver(CBConstants.IS_CHARGING.value),
+    broadcastReceiver = CBBroadcastReceiver(
+        tag = CBConstants.IS_CHARGING.value,
+        isLibraryProvidedTag = true,
+    ),
 ) { _, intent ->
     val status: Int = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1)
     return@rememberBroadcastReceiverAsState status == BatteryManager.BATTERY_STATUS_CHARGING
@@ -298,7 +314,10 @@ fun rememberPackageInfo(broadcastReceiver: CBBroadcastReceiver): State<CBPackage
 fun rememberCurrentTimeMillis(): State<Long> = rememberBroadcastReceiverAsState(
     initialValue = System.currentTimeMillis(),
     intentFilters = listOf(CBIntentFilter(CBIntentAction.TimeTick)),
-    broadcastReceiver = CBBroadcastReceiver(CBConstants.CURRENT_TIME_MILLIS.value),
+    broadcastReceiver = CBBroadcastReceiver(
+        tag = CBConstants.CURRENT_TIME_MILLIS.value,
+        isLibraryProvidedTag = true,
+    ),
 ) { _, _ -> System.currentTimeMillis() }
 
 /**
@@ -380,7 +399,10 @@ fun rememberIsScreenOn(): State<Boolean> {
             CBIntentFilter(CBIntentAction.ScreenOn),
             CBIntentFilter(CBIntentAction.ScreenOff),
         ),
-        broadcastReceiver = CBBroadcastReceiver(CBConstants.IS_SCREEN_ON.value),
+        broadcastReceiver = CBBroadcastReceiver(
+            tag = CBConstants.IS_SCREEN_ON.value,
+            isLibraryProvidedTag = true,
+        ),
     ) { _, _ -> powerManager.isInteractive }
 }
 
@@ -400,7 +422,10 @@ fun rememberIsHeadsetConnected(): State<Boolean> {
     return rememberBroadcastReceiverAsState(
         initialValue = fetchIsHeadsetConnected(audioManager),
         intentFilters = listOf(CBIntentFilter(CBIntentAction.HeadsetPlug)),
-        broadcastReceiver = CBBroadcastReceiver(CBConstants.HEADSET_INFO.value),
+        broadcastReceiver = CBBroadcastReceiver(
+            tag = CBConstants.HEADSET_INFO.value,
+            isLibraryProvidedTag = true,
+        ),
     ) { _, _ -> fetchIsHeadsetConnected(audioManager) }
 }
 
@@ -449,7 +474,10 @@ fun rememberCurrentInputMethod(): State<CBInputMethodInfo?> {
     return rememberBroadcastReceiverAsState(
         initialValue = fetchCurrentInputMethodInfo(context),
         intentFilters = listOf(CBIntentFilter(CBIntentAction.InputMethodChanged)),
-        broadcastReceiver = CBBroadcastReceiver(CBConstants.INPUT_METHOD.value),
+        broadcastReceiver = CBBroadcastReceiver(
+            tag = CBConstants.INPUT_METHOD.value,
+            isLibraryProvidedTag = true,
+        ),
     ) { _, _ -> fetchCurrentInputMethodInfo(context) }
 }
 
