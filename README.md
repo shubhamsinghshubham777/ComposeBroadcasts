@@ -24,19 +24,23 @@ and react to system-wide events and changes in your Compose UI.
 - 🎛️ Custom BroadcastReceiver support
 - 🧩 Composable functions for common system events
 - 🛠️ Flexible API for creating custom broadcast listeners
+- ☮️ No need to worry about registering / unregistering listeners anymore
 
 ## 📦 Installation
 
 <img alt="Sonatype Nexus (Releases)" src="https://img.shields.io/nexus/r/io.github.shubhamsinghshubham777/composebroadcasts?server=https%3A%2F%2Fs01.oss.sonatype.org&style=for-the-badge">
 
 Add the following to your app's `build.gradle.kts`:
+
 ```kotlin
 // Get the latest version from GitHub Releases/Tags
 implementation("io.github.shubhamsinghshubham777:composebroadcasts:0.0.1")
 ```
 
 ### For SNAPSHOT versions
+
 Add the following to your project level `settings.gradle.kts`:
+
 ```kotlin
 dependencyResolutionManagement {
     repositories {
@@ -49,7 +53,22 @@ dependencyResolutionManagement {
 
 ## 🛠️ Usage
 
-Here are some examples of how to use Compose Broadcasts in your project:
+Here's the complete list of composables Compose Broadcasts provides at the moment:
+
+| **Composable**                   | **Return Type**    |
+|----------------------------------|--------------------|
+| rememberBroadcastReceiverAsState | Generic (T)        |
+| rememberIsAirplaneModeOn         | Boolean            |
+| rememberBatteryLevel             | Int                |
+| rememberIsCharging               | Boolean            |
+| rememberPackageInfo              | CBPackageInfo?     |
+| rememberCurrentTimeMillis        | Long               |
+| rememberSystemLocale             | Locale             |
+| rememberIsScreenOn               | Boolean            |
+| rememberIsHeadsetConnected       | Boolean            |
+| rememberCurrentInputMethod       | CBInputMethodInfo? |
+
+And here are some examples of how to use them in your project:
 
 ### Observe Airplane Mode
 
@@ -93,7 +112,7 @@ Text("Current time: ${convertMillisToTimeString(currentTimeMillis)}")
 ### Track System Locale Changes
 
 Check out the [🧩 Custom BroadcastReceivers](#-custom-broadcastreceivers) section below to learn
-how to create PackageInfoReceiver.
+how to create LocaleReceiver.
 
 ```kotlin
 val localeReceiver = LocaleReceiver()
@@ -109,7 +128,10 @@ You can create custom BroadcastReceivers by extending the `CBBroadcastReceiver` 
 class MyCustomReceiver : CBBroadcastReceiver(tag = "my_custom_receiver") {
     override fun onReceive(context: Context?, intent: Intent?) {
         super.onReceive(context, intent)
-        // Your custom logic here
+        // Your custom logic here (if you like the old way of writing receivers)
+        // Ideally, your logic should be a part of the composable itself
+        // This class should just be left blank, for example:
+        // class MyCustomReceiver : CBBroadcastReceiver(tag = "my_custom_receiver")
     }
 }
 ```
