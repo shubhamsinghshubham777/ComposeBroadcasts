@@ -2,7 +2,7 @@
 <h1 align="center">Compose Broadcasts</h1>
 
 <p align="center">
-    <img src="assets/logo.webp" width=250 alt="Compose Broadcasts Logo" />
+    <img src="assets/logo.svg" width=250 alt="Compose Broadcasts Logo" />
 </p>
 
 <p align="center">
