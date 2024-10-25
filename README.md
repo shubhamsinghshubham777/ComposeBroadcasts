@@ -155,12 +155,11 @@ Then, register the receiver in your AndroidManifest.xml file:
 Finally, use it in your composable:
 
 ```kotlin
-val myCustomReceiver = MyCustomReceiver()
 val customState by rememberBroadcastReceiverAsState(
     initialValue = initialState,
     // Example: CBIntentAction.Custom(Intent.ACTION_PACKAGE_ADDED)
     intentFilters = listOf(CBIntentFilter(CBIntentAction.Custom("YOUR_CUSTOM_ACTION"))),
-    broadcastReceiver = myCustomReceiver
+    broadcastReceiver = MyCustomReceiver(),
 ) { context, intent ->
     // Map the received intent to your state
 }
