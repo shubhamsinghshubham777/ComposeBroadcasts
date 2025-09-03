@@ -28,27 +28,13 @@ and react to system-wide events and changes in your Compose UI.
 
 ## 📦 Installation
 
-<img alt="Sonatype Nexus (Releases)" src="https://img.shields.io/nexus/r/io.github.shubhamsinghshubham777/composebroadcasts?server=https%3A%2F%2Fs01.oss.sonatype.org&style=for-the-badge">
+![Maven Central Version](https://img.shields.io/maven-central/v/io.github.shubhamsinghshubham777/composebroadcasts)
 
 Add the following to your app's `build.gradle.kts`:
 
 ```kotlin
-// Get the latest version from GitHub Releases/Tags
-implementation("io.github.shubhamsinghshubham777:composebroadcasts:0.0.1")
-```
-
-### For SNAPSHOT versions
-
-Add the following to your project level `settings.gradle.kts`:
-
-```kotlin
-dependencyResolutionManagement {
-    repositories {
-        ...
-        // Add this
-        maven("https://s01.oss.sonatype.org/content/repositories/snapshots/")
-    }
-}
+// Get the latest version from GitHub Releases/Tags (or the badge shown above)
+implementation("io.github.shubhamsinghshubham777:composebroadcasts:x.y.z")
 ```
 
 ## 🛠️ Usage
