@@ -496,12 +496,12 @@ private fun fetchCurrentInputMethodInfo(context: Context): CBInputMethodInfo? {
             ?: return null
 
         CBInputMethodInfo(
-            name = context.packageManager.getApplicationLabel(info.applicationInfo).toString(),
+            name = context.packageManager.getApplicationLabel(info.applicationInfo ?: return null).toString(),
             packageName = info.packageName,
             fullQualifier = inputMethodFullQualifier,
             appIcon = context.packageManager.getApplicationIcon(info.packageName),
         )
-    } catch (e: NameNotFoundException) {
+    } catch (_: NameNotFoundException) {
         null
     }
 }
