@@ -1,3 +1,1 @@
--dontwarn compose.broadcasts.CBBroadcastReceiver
--dontwarn compose.broadcasts.CBInputMethodInfo
--dontwarn compose.broadcasts.ComposablesKt
+-keep class compose.broadcasts.*

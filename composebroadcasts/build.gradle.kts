@@ -47,7 +47,7 @@ dependencies {
 }
 
 mavenPublishing {
-    publishToMavenCentral()
+    publishToMavenCentral(automaticRelease = true)
     signAllPublications()
     coordinates(groupId = "io.github.shubhamsinghshubham777", artifactId = "composebroadcasts")
     pom {
