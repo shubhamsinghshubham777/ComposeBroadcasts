@@ -1,1 +1,1 @@
--keep class compose.broadcasts.*
+-keep class compose.broadcasts.** { *; }
