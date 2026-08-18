@@ -147,6 +147,41 @@ LaunchedEffect(events) {
 }
 ```
 
+### Test a real Android system broadcast
+
+Power Saver changes send `PowerManager.ACTION_POWER_SAVE_MODE_CHANGED`. Compose Broadcasts does not
+provide a convenience composable for this action, so it is a useful end-to-end example:
+
+```kotlin
+import android.os.PowerManager
+import androidx.compose.runtime.getValue
+
+val context = LocalContext.current
+val powerManager = remember {
+    context.getSystemService(Context.POWER_SERVICE) as PowerManager
+}
+val isPowerSaveMode by rememberBroadcastReceiverAsState(
+    initialValue = powerManager.isPowerSaveMode,
+    intentFilters = listOf(
+        CBIntentFilter(
+            CBIntentAction.Custom(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED),
+        ),
+    ),
+) { _, _ -> powerManager.isPowerSaveMode }
+
+Text("Power Saver: ${if (isPowerSaveMode) "ON" else "OFF"}")
+```
+
+Run the app on an emulator or connected device, then toggle the setting from a terminal:
+
+```shell
+adb shell settings put global low_power 1  # turn on
+adb shell settings put global low_power 0  # turn off
+```
+
+You can also toggle Battery Saver from the device's Quick Settings panel. This is a dynamically
+registered, foreground observation; it does not require a manifest receiver.
+
 ### Lifecycle and Android restrictions
 
 - Registrations exist only while the composable is active. They are suitable for foreground UI
