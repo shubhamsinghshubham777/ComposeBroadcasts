@@ -11,6 +11,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager.NameNotFoundException
+import android.location.LocationManager
 import android.media.AudioDeviceInfo
 import android.media.AudioManager
 import android.os.BatteryManager
@@ -261,6 +262,46 @@ fun rememberCurrentInputMethod(): State<CBInputMethodInfo?> {
         CBBroadcastReceiver(CBConstants.INPUT_METHOD.value, true),
     ) { receiverContext, _ -> fetchCurrentInputMethodInfo(receiverContext) }
 }
+
+/** Observes whether Android's Battery Saver / Power Save mode is enabled. */
+@Composable
+fun rememberIsPowerSaveMode(): State<Boolean> {
+    val context = LocalContext.current
+    val powerManager = remember(context) {
+        context.getSystemService(Context.POWER_SERVICE) as PowerManager
+    }
+    return rememberBroadcastReceiverAsState(
+        powerManager.isPowerSaveMode,
+        listOf(CBIntentFilter(CBIntentAction.PowerSaveModeChanged)),
+        CBBroadcastReceiver(CBConstants.POWER_SAVE_MODE.value, true),
+    ) { _, _ -> powerManager.isPowerSaveMode }
+}
+
+/** Observes whether location services are enabled. */
+@Composable
+fun rememberIsLocationEnabled(): State<Boolean> {
+    val context = LocalContext.current
+    val locationManager = remember(context) {
+        context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+    }
+    return rememberBroadcastReceiverAsState(
+        fetchIsLocationEnabled(context, locationManager),
+        listOf(CBIntentFilter(CBIntentAction.LocationModeChanged)),
+        CBBroadcastReceiver(CBConstants.LOCATION_MODE.value, true),
+    ) { receiverContext, _ -> fetchIsLocationEnabled(receiverContext, locationManager) }
+}
+
+@Suppress("DEPRECATION")
+private fun fetchIsLocationEnabled(context: Context, locationManager: LocationManager): Boolean =
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+        locationManager.isLocationEnabled
+    } else {
+        Settings.Secure.getInt(
+            context.contentResolver,
+            Settings.Secure.LOCATION_MODE,
+            Settings.Secure.LOCATION_MODE_OFF,
+        ) != Settings.Secure.LOCATION_MODE_OFF
+    }
 
 private fun fetchCurrentInputMethodInfo(context: Context): CBInputMethodInfo? {
     val qualifier = Settings.Secure.getString(context.contentResolver, Settings.Secure.DEFAULT_INPUT_METHOD)

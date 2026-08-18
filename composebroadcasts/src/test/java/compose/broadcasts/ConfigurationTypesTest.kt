@@ -1,6 +1,8 @@
 package compose.broadcasts
 
 import android.content.Intent
+import android.location.LocationManager
+import android.os.PowerManager
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -15,6 +17,8 @@ class ConfigurationTypesTest {
         )
         assertEquals(Intent.ACTION_PACKAGE_ADDED, CBIntentAction.PackageAdded.rawValue)
         assertEquals(Intent.ACTION_INPUT_METHOD_CHANGED, CBIntentAction.InputMethodChanged.rawValue)
+        assertEquals(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED, CBIntentAction.PowerSaveModeChanged.rawValue)
+        assertEquals(LocationManager.MODE_CHANGED_ACTION, CBIntentAction.LocationModeChanged.rawValue)
     }
 
     @Test

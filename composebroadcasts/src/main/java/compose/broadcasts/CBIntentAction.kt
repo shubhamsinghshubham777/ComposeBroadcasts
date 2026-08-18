@@ -16,6 +16,8 @@
 package compose.broadcasts
 
 import android.content.Intent
+import android.location.LocationManager
+import android.os.PowerManager
 import compose.broadcasts.CBIntentAction.Custom
 
 /**
@@ -43,5 +45,7 @@ sealed class CBIntentAction(val rawValue: String) {
     data object ScreenOff : CBIntentAction(Intent.ACTION_SCREEN_OFF)
     data object HeadsetPlug : CBIntentAction(Intent.ACTION_HEADSET_PLUG)
     data object InputMethodChanged : CBIntentAction(Intent.ACTION_INPUT_METHOD_CHANGED)
+    data object PowerSaveModeChanged : CBIntentAction(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED)
+    data object LocationModeChanged : CBIntentAction(LocationManager.MODE_CHANGED_ACTION)
     data class Custom(val value: String) : CBIntentAction(value)
 }

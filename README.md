@@ -56,6 +56,8 @@ The library currently provides these composables:
 | `rememberIsScreenOn` | `State<Boolean>` |
 | `rememberIsHeadsetConnected` | `State<Boolean>` |
 | `rememberCurrentInputMethod` | `State<CBInputMethodInfo?>` |
+| `rememberIsPowerSaveMode` | `State<Boolean>` |
+| `rememberIsLocationEnabled` | `State<Boolean>` |
 
 And here are some examples of how to use them in your project:
 
@@ -78,6 +80,13 @@ Text("Current battery level: $batteryLevel%")
 ```kotlin
 val isCharging by rememberIsCharging()
 Text("Device is ${if (isCharging) "charging" else "not charging"}")
+```
+
+### Monitor Power Saver and Location Services
+
+```kotlin
+val isPowerSaveMode by rememberIsPowerSaveMode()
+val isLocationEnabled by rememberIsLocationEnabled()
 ```
 
 ### Observe Package Changes
