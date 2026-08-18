@@ -28,7 +28,6 @@ import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -38,6 +37,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLocale
 import androidx.lifecycle.Lifecycle
 import kotlinx.coroutines.launch
 import java.util.Locale
@@ -187,7 +187,6 @@ private fun fetchBatteryLevel(context: Context): Int {
  *
  * @return A boolean depicting whether the device is currently charging.
  */
-@RequiresApi(Build.VERSION_CODES.M)
 @Composable
 fun rememberIsCharging(): State<Boolean> = rememberBroadcastReceiverAsState(
     initialValue = fetchIsCharging(LocalContext.current),
@@ -202,7 +201,6 @@ fun rememberIsCharging(): State<Boolean> = rememberBroadcastReceiverAsState(
             || status == BatteryManager.BATTERY_STATUS_FULL
 }
 
-@RequiresApi(Build.VERSION_CODES.M)
 private fun fetchIsCharging(context: Context): Boolean {
     val batteryManager = context.getSystemService(Context.BATTERY_SERVICE) as BatteryManager
     return batteryManager.isCharging
@@ -376,7 +374,7 @@ fun rememberCurrentTimeMillis(): State<Long> = rememberBroadcastReceiverAsState(
 @Composable
 fun rememberSystemLocale(broadcastReceiver: CBBroadcastReceiver): State<Locale> =
     rememberBroadcastReceiverAsState(
-        initialValue = Locale.getDefault(),
+        initialValue = LocalLocale.current.platformLocale,
         intentFilters = listOf(CBIntentFilter(CBIntentAction.LocaleChanged)),
         broadcastReceiver = broadcastReceiver,
     ) { _, _ -> Locale.getDefault() }
@@ -430,34 +428,22 @@ fun rememberIsHeadsetConnected(): State<Boolean> {
 }
 
 private fun fetchIsHeadsetConnected(audioManager: AudioManager): Boolean {
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-        audioManager
-            .getDevices(AudioManager.GET_DEVICES_OUTPUTS)
-            .filter { device ->
-                val hasUsbHeadset = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    device.type == AudioDeviceInfo.TYPE_USB_HEADSET
-                } else false
+    return audioManager
+        .getDevices(AudioManager.GET_DEVICES_OUTPUTS)
+        .any { device ->
+            val hasUsbHeadset = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                    && device.type == AudioDeviceInfo.TYPE_USB_HEADSET
+            val hasBluetoothHeadset = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+                    && device.type == AudioDeviceInfo.TYPE_BLE_HEADSET
+            val isBLESpeaker = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+                    && device.type == AudioDeviceInfo.TYPE_BLE_SPEAKER
 
-                val hasBluetoothHeadset = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    device.type == AudioDeviceInfo.TYPE_BLE_HEADSET
-                } else false
-
-                val isBLESpeaker = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    device.type == AudioDeviceInfo.TYPE_BLE_SPEAKER
-                } else false
-
-                return@filter device.type == AudioDeviceInfo.TYPE_WIRED_HEADSET
-                        || device.type == AudioDeviceInfo.TYPE_WIRED_HEADPHONES
-                        || hasBluetoothHeadset
-                        || hasUsbHeadset
-                        || isBLESpeaker
-            }
-            .isNotEmpty()
-    } else {
-        // TODO(Shubham): Need to verify/test this logic
-        @Suppress("DEPRECATION")
-        audioManager.isWiredHeadsetOn
-    }
+            device.type == AudioDeviceInfo.TYPE_WIRED_HEADSET
+                    || device.type == AudioDeviceInfo.TYPE_WIRED_HEADPHONES
+                    || hasBluetoothHeadset
+                    || hasUsbHeadset
+                    || isBLESpeaker
+        }
 }
 
 /**

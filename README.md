@@ -37,6 +37,8 @@ Add the following to your app's `build.gradle.kts`:
 implementation("io.github.shubhamsinghshubham777:composebroadcasts:x.y.z")
 ```
 
+Compose Broadcasts requires Android 6.0 (API 23) or later.
+
 ## 🛠️ Usage
 
 Here's the complete list of composables Compose Broadcasts provides at the moment:
