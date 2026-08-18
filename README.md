@@ -13,18 +13,18 @@
 
 ## 🚀 Introduction
 
-Compose Broadcasts is a powerful Jetpack Compose library that simplifies the process of working with
-Android's BroadcastReceivers in a composable environment. It provides an intuitive API to observe
-and react to system-wide events and changes in your Compose UI.
+Compose Broadcasts provides lifecycle-aware, Compose-first APIs for observing Android broadcasts in
+UI code. It handles dynamic registration and cleanup for you and supports both state reducers and
+event streams.
 
 ## ✨ Features
 
 - 🔄 Easy integration with Jetpack Compose
 - 📡 Observe system events like battery level, airplane mode, and more
-- 🎛️ Custom BroadcastReceiver support
+- 🎛️ Custom broadcasts without manifest boilerplate
 - 🧩 Composable functions for common system events
 - 🛠️ Flexible API for creating custom broadcast listeners
-- ☮️ No need to worry about registering / unregistering listeners anymore
+- ☮️ Automatic registration and unregistration with the composition
 
 ## 📦 Installation
 
@@ -41,20 +41,21 @@ Compose Broadcasts requires Android 6.0 (API 23) or later.
 
 ## 🛠️ Usage
 
-Here's the complete list of composables Compose Broadcasts provides at the moment:
+The library currently provides these composables:
 
 | **Composable**                   | **Return Type**    |
 |----------------------------------|--------------------|
-| rememberBroadcastReceiverAsState | Generic (T)        |
-| rememberIsAirplaneModeOn         | Boolean            |
-| rememberBatteryLevel             | Int                |
-| rememberIsCharging               | Boolean            |
-| rememberPackageInfo              | CBPackageInfo?     |
-| rememberCurrentTimeMillis        | Long               |
-| rememberSystemLocale             | Locale             |
-| rememberIsScreenOn               | Boolean            |
-| rememberIsHeadsetConnected       | Boolean            |
-| rememberCurrentInputMethod       | CBInputMethodInfo? |
+| `rememberBroadcastEvents` | `Flow<Intent>` |
+| `rememberBroadcastReceiverAsState` | `State<T>` |
+| `rememberIsAirplaneModeOn` | `State<Boolean>` |
+| `rememberBatteryLevel` | `State<Int>` |
+| `rememberIsCharging` | `State<Boolean>` |
+| `rememberPackageInfo` | `State<CBPackageInfo?>` |
+| `rememberCurrentTimeMillis` | `State<Long>` |
+| `rememberSystemLocale` | `State<Locale>` |
+| `rememberIsScreenOn` | `State<Boolean>` |
+| `rememberIsHeadsetConnected` | `State<Boolean>` |
+| `rememberCurrentInputMethod` | `State<CBInputMethodInfo?>` |
 
 And here are some examples of how to use them in your project:
 
@@ -81,11 +82,13 @@ Text("Device is ${if (isCharging) "charging" else "not charging"}")
 
 ### Observe Package Changes
 
-Check out the [🧩 Custom BroadcastReceivers](#-custom-broadcastreceivers) section below to learn
-how to create PackageInfoReceiver.
+Package and locale observers are dynamic, foreground registrations. They observe broadcasts while
+the composable is active; they do not persist UI state or monitor the app while its process is
+absent.
 
 ```kotlin
-val packageInfoReceiver = PackageInfoReceiver()
+// CBBroadcastReceiver can be supplied by your application.
+val packageInfoReceiver = remember { CBBroadcastReceiver("package-events") }
 val packageInfo by rememberPackageInfo(packageInfoReceiver)
 Text("Last package change: $packageInfo")
 ```
@@ -99,59 +102,68 @@ Text("Current time: ${convertMillisToTimeString(currentTimeMillis)}")
 
 ### Track System Locale Changes
 
-Check out the [🧩 Custom BroadcastReceivers](#-custom-broadcastreceivers) section below to learn
-how to create LocaleReceiver.
-
 ```kotlin
-val localeReceiver = LocaleReceiver()
+val localeReceiver = remember { CBBroadcastReceiver("locale-events") }
 val currentLocale by rememberSystemLocale(localeReceiver)
 Text("Current system locale: ${currentLocale.toLanguageTag()}")
 ```
 
-## 🧩 Custom BroadcastReceivers
+## 🧩 Custom broadcasts
 
-You can create custom BroadcastReceivers by extending the `CBBroadcastReceiver` class:
-
-```kotlin
-class MyCustomReceiver : CBBroadcastReceiver(tag = "my_custom_receiver") {
-    override fun onReceive(context: Context?, intent: Intent?) {
-        super.onReceive(context, intent)
-        // Your custom logic here (if you like the old way of writing receivers)
-        // Ideally, your logic should be a part of the composable itself
-        // This class should just be left blank, for example:
-        // class MyCustomReceiver : CBBroadcastReceiver(tag = "my_custom_receiver")
-    }
-}
-```
-
-Then, register the receiver in your AndroidManifest.xml file:
-
-```xml
-
-<manifest>
-    <application>
-        <receiver android:name=".MyCustomReceiver" android:exported="false">
-            <intent-filter>
-                <!-- Example: android.intent.action.PACKAGE_ADDED -->
-                <action android:name="YOUR_CUSTOM_ACTION" />
-            </intent-filter>
-        </receiver>
-    </application>
-</manifest>
-```
-
-Finally, use it in your composable:
+For most use cases, no receiver subclass is needed. The state overload creates and owns a receiver
+for the current composition:
 
 ```kotlin
 val customState by rememberBroadcastReceiverAsState(
-    initialValue = initialState,
-    // Example: CBIntentAction.Custom(Intent.ACTION_PACKAGE_ADDED)
-    intentFilters = listOf(CBIntentFilter(CBIntentAction.Custom("YOUR_CUSTOM_ACTION"))),
-    broadcastReceiver = MyCustomReceiver(),
-) { context, intent ->
-    // Map the received intent to your state
+    initialValue = 0,
+    intentFilters = listOf(
+        CBIntentFilter(CBIntentAction.Custom("com.example.SYNC_COMPLETED")),
+    ),
+) { _, _ ->
+    1
 }
 ```
+
+Use the receiver-owned overload when the same receiver needs to be shared or configured outside
+the composable:
+
+```kotlin
+val receiver = remember { CBBroadcastReceiver("sync-events") }
+val customState by rememberBroadcastReceiverAsState(
+    initialValue = false,
+    intentFilters = listOf(CBIntentFilter(CBIntentAction.Custom("com.example.SYNC_COMPLETED"))),
+    broadcastReceiver = receiver,
+) { _, _ -> true }
+```
+
+For event-style broadcasts, collect the generic stream instead of reducing it to state:
+
+```kotlin
+val events = rememberBroadcastEvents(
+    intentFilters = listOf(CBIntentFilter(CBIntentAction.Custom("YOUR_CUSTOM_ACTION"))),
+)
+LaunchedEffect(events) {
+    events.collect { intent -> /* handle intent */ }
+}
+```
+
+### Lifecycle and Android restrictions
+
+- Registrations exist only while the composable is active. They are suitable for foreground UI
+  observation, not background work or durable event storage.
+- `receiverExported = false` is the default. Set it to `true` only when broadcasts from other apps
+  are required, and validate the security implications of doing so.
+- A manifest receiver and a dynamically registered receiver have separate lifecycles. Use a
+  manifest receiver, WorkManager, or another background mechanism when work must continue after the
+  process or UI is gone.
+- Android may restrict implicit, protected, sticky, and background broadcasts. The library does not
+  bypass platform permissions or broadcast restrictions; consult the Android broadcast documentation
+  for the action you observe.
+- Each `CBIntentFilter` keeps its own data scheme and MIME type constraints. Invalid MIME types are
+  rejected during registration with an explanatory exception.
+
+Keep receiver instances stable with `remember` when passing them to a composable. The library
+supports multiple active subscriptions, including multiple call sites using the same receiver.
 
 ## 🤝 Contributing
 
