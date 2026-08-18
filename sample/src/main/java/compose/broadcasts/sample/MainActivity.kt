@@ -1,6 +1,5 @@
 package compose.broadcasts.sample
 
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -61,7 +60,7 @@ class MainActivity : ComponentActivity() {
                     topBar = {
                         CenterAlignedTopAppBar(
                             title = { Text("Compose Broadcasts") },
-                            colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                            colors = TopAppBarDefaults.topAppBarColors(
                                 containerColor = MaterialTheme.colorScheme.primaryContainer,
                             ),
                         )
@@ -87,12 +86,10 @@ class MainActivity : ComponentActivity() {
                         Text("Current battery level is ${rememberBatteryLevel().value}")
 
                         // Is Charging (or NOT)
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                            Text(
-                                text = "Device is ${if (rememberIsCharging().value) "" else "NOT "}" +
-                                        "charging"
-                            )
-                        }
+                        Text(
+                            text = "Device is ${if (rememberIsCharging().value) "" else "NOT "}" +
+                                    "charging"
+                        )
 
                         // Package Info
                         Text(

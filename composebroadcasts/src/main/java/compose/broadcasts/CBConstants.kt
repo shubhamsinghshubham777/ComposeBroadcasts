@@ -23,4 +23,9 @@ internal enum class CBConstants(val value: String) {
     IS_SCREEN_ON("is_screen_on"),
     HEADSET_INFO("headset_info"),
     INPUT_METHOD("input_method"),
+    POWER_SAVE_MODE("power_save_mode"),
+    LOCATION_MODE("location_mode"),
+    BLUETOOTH_STATE("bluetooth_state"),
+    NFC_STATE("nfc_state"),
+    DEVICE_IDLE_MODE("device_idle_mode"),
 }

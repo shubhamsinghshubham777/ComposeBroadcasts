@@ -13,18 +13,18 @@
 
 ## 🚀 Introduction
 
-Compose Broadcasts is a powerful Jetpack Compose library that simplifies the process of working with
-Android's BroadcastReceivers in a composable environment. It provides an intuitive API to observe
-and react to system-wide events and changes in your Compose UI.
+Compose Broadcasts provides lifecycle-aware, Compose-first APIs for observing Android broadcasts in
+UI code. It handles dynamic registration and cleanup for you and supports both state reducers and
+event streams.
 
 ## ✨ Features
 
 - 🔄 Easy integration with Jetpack Compose
 - 📡 Observe system events like battery level, airplane mode, and more
-- 🎛️ Custom BroadcastReceiver support
+- 🎛️ Custom broadcasts without manifest boilerplate
 - 🧩 Composable functions for common system events
 - 🛠️ Flexible API for creating custom broadcast listeners
-- ☮️ No need to worry about registering / unregistering listeners anymore
+- ☮️ Automatic registration and unregistration with the composition
 
 ## 📦 Installation
 
@@ -37,22 +37,30 @@ Add the following to your app's `build.gradle.kts`:
 implementation("io.github.shubhamsinghshubham777:composebroadcasts:x.y.z")
 ```
 
+Compose Broadcasts requires Android 6.0 (API 23) or later.
+
 ## 🛠️ Usage
 
-Here's the complete list of composables Compose Broadcasts provides at the moment:
+The library currently provides these composables:
 
 | **Composable**                   | **Return Type**    |
 |----------------------------------|--------------------|
-| rememberBroadcastReceiverAsState | Generic (T)        |
-| rememberIsAirplaneModeOn         | Boolean            |
-| rememberBatteryLevel             | Int                |
-| rememberIsCharging               | Boolean            |
-| rememberPackageInfo              | CBPackageInfo?     |
-| rememberCurrentTimeMillis        | Long               |
-| rememberSystemLocale             | Locale             |
-| rememberIsScreenOn               | Boolean            |
-| rememberIsHeadsetConnected       | Boolean            |
-| rememberCurrentInputMethod       | CBInputMethodInfo? |
+| `rememberBroadcastEvents` | `Flow<Intent>` |
+| `rememberBroadcastReceiverAsState` | `State<T>` |
+| `rememberIsAirplaneModeOn` | `State<Boolean>` |
+| `rememberBatteryLevel` | `State<Int>` |
+| `rememberIsCharging` | `State<Boolean>` |
+| `rememberPackageInfo` | `State<CBPackageInfo?>` |
+| `rememberCurrentTimeMillis` | `State<Long>` |
+| `rememberSystemLocale` | `State<Locale>` |
+| `rememberIsScreenOn` | `State<Boolean>` |
+| `rememberIsHeadsetConnected` | `State<Boolean>` |
+| `rememberCurrentInputMethod` | `State<CBInputMethodInfo?>` |
+| `rememberIsPowerSaveMode` | `State<Boolean>` |
+| `rememberIsLocationEnabled` | `State<Boolean>` |
+| `rememberIsBluetoothEnabled` | `State<Boolean>` |
+| `rememberIsNfcEnabled` | `State<Boolean>` |
+| `rememberIsDeviceIdleMode` | `State<Boolean>` |
 
 And here are some examples of how to use them in your project:
 
@@ -77,13 +85,30 @@ val isCharging by rememberIsCharging()
 Text("Device is ${if (isCharging) "charging" else "not charging"}")
 ```
 
-### Observe Package Changes
-
-Check out the [🧩 Custom BroadcastReceivers](#-custom-broadcastreceivers) section below to learn
-how to create PackageInfoReceiver.
+### Monitor Power Saver and Location Services
 
 ```kotlin
-val packageInfoReceiver = PackageInfoReceiver()
+val isPowerSaveMode by rememberIsPowerSaveMode()
+val isLocationEnabled by rememberIsLocationEnabled()
+val isBluetoothEnabled by rememberIsBluetoothEnabled()
+val isNfcEnabled by rememberIsNfcEnabled()
+val isDeviceIdleMode by rememberIsDeviceIdleMode()
+```
+
+These convenience methods only observe and expose current system state. The library never requests
+permissions. The host application must declare and request any permission required by Android for
+the state it observes; `rememberIsBluetoothEnabled` requires `BLUETOOTH_CONNECT` on Android 12
+(API 31) and above.
+
+### Observe Package Changes
+
+Package and locale observers are dynamic, foreground registrations. They observe broadcasts while
+the composable is active; they do not persist UI state or monitor the app while its process is
+absent.
+
+```kotlin
+// CBBroadcastReceiver can be supplied by your application.
+val packageInfoReceiver = remember { CBBroadcastReceiver("package-events") }
 val packageInfo by rememberPackageInfo(packageInfoReceiver)
 Text("Last package change: $packageInfo")
 ```
@@ -97,59 +122,103 @@ Text("Current time: ${convertMillisToTimeString(currentTimeMillis)}")
 
 ### Track System Locale Changes
 
-Check out the [🧩 Custom BroadcastReceivers](#-custom-broadcastreceivers) section below to learn
-how to create LocaleReceiver.
-
 ```kotlin
-val localeReceiver = LocaleReceiver()
+val localeReceiver = remember { CBBroadcastReceiver("locale-events") }
 val currentLocale by rememberSystemLocale(localeReceiver)
 Text("Current system locale: ${currentLocale.toLanguageTag()}")
 ```
 
-## 🧩 Custom BroadcastReceivers
+## 🧩 Custom broadcasts
 
-You can create custom BroadcastReceivers by extending the `CBBroadcastReceiver` class:
-
-```kotlin
-class MyCustomReceiver : CBBroadcastReceiver(tag = "my_custom_receiver") {
-    override fun onReceive(context: Context?, intent: Intent?) {
-        super.onReceive(context, intent)
-        // Your custom logic here (if you like the old way of writing receivers)
-        // Ideally, your logic should be a part of the composable itself
-        // This class should just be left blank, for example:
-        // class MyCustomReceiver : CBBroadcastReceiver(tag = "my_custom_receiver")
-    }
-}
-```
-
-Then, register the receiver in your AndroidManifest.xml file:
-
-```xml
-
-<manifest>
-    <application>
-        <receiver android:name=".MyCustomReceiver" android:exported="false">
-            <intent-filter>
-                <!-- Example: android.intent.action.PACKAGE_ADDED -->
-                <action android:name="YOUR_CUSTOM_ACTION" />
-            </intent-filter>
-        </receiver>
-    </application>
-</manifest>
-```
-
-Finally, use it in your composable:
+For most use cases, no receiver subclass is needed. The state overload creates and owns a receiver
+for the current composition:
 
 ```kotlin
 val customState by rememberBroadcastReceiverAsState(
-    initialValue = initialState,
-    // Example: CBIntentAction.Custom(Intent.ACTION_PACKAGE_ADDED)
-    intentFilters = listOf(CBIntentFilter(CBIntentAction.Custom("YOUR_CUSTOM_ACTION"))),
-    broadcastReceiver = MyCustomReceiver(),
-) { context, intent ->
-    // Map the received intent to your state
+    initialValue = 0,
+    intentFilters = listOf(
+        CBIntentFilter(CBIntentAction.Custom("com.example.SYNC_COMPLETED")),
+    ),
+) { _, _ ->
+    1
 }
 ```
+
+Use the receiver-owned overload when the same receiver needs to be shared or configured outside
+the composable:
+
+```kotlin
+val receiver = remember { CBBroadcastReceiver("sync-events") }
+val customState by rememberBroadcastReceiverAsState(
+    initialValue = false,
+    intentFilters = listOf(CBIntentFilter(CBIntentAction.Custom("com.example.SYNC_COMPLETED"))),
+    broadcastReceiver = receiver,
+) { _, _ -> true }
+```
+
+For event-style broadcasts, collect the generic stream instead of reducing it to state:
+
+```kotlin
+val events = rememberBroadcastEvents(
+    intentFilters = listOf(CBIntentFilter(CBIntentAction.Custom("YOUR_CUSTOM_ACTION"))),
+)
+LaunchedEffect(events) {
+    events.collect { intent -> /* handle intent */ }
+}
+```
+
+### Test a real Android system broadcast
+
+Power Saver changes send `PowerManager.ACTION_POWER_SAVE_MODE_CHANGED`. Compose Broadcasts does not
+provide a convenience composable for this action, so it is a useful end-to-end example:
+
+```kotlin
+import android.os.PowerManager
+import androidx.compose.runtime.getValue
+
+val context = LocalContext.current
+val powerManager = remember {
+    context.getSystemService(Context.POWER_SERVICE) as PowerManager
+}
+val isPowerSaveMode by rememberBroadcastReceiverAsState(
+    initialValue = powerManager.isPowerSaveMode,
+    intentFilters = listOf(
+        CBIntentFilter(
+            CBIntentAction.Custom(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED),
+        ),
+    ),
+) { _, _ -> powerManager.isPowerSaveMode }
+
+Text("Power Saver: ${if (isPowerSaveMode) "ON" else "OFF"}")
+```
+
+Run the app on an emulator or connected device, then toggle the setting from a terminal:
+
+```shell
+adb shell settings put global low_power 1  # turn on
+adb shell settings put global low_power 0  # turn off
+```
+
+You can also toggle Battery Saver from the device's Quick Settings panel. This is a dynamically
+registered, foreground observation; it does not require a manifest receiver.
+
+### Lifecycle and Android restrictions
+
+- Registrations exist only while the composable is active. They are suitable for foreground UI
+  observation, not background work or durable event storage.
+- `receiverExported = false` is the default. Set it to `true` only when broadcasts from other apps
+  are required, and validate the security implications of doing so.
+- A manifest receiver and a dynamically registered receiver have separate lifecycles. Use a
+  manifest receiver, WorkManager, or another background mechanism when work must continue after the
+  process or UI is gone.
+- Android may restrict implicit, protected, sticky, and background broadcasts. The library does not
+  bypass platform permissions or broadcast restrictions; consult the Android broadcast documentation
+  for the action you observe.
+- Each `CBIntentFilter` keeps its own data scheme and MIME type constraints. Invalid MIME types are
+  rejected during registration with an explanatory exception.
+
+Keep receiver instances stable with `remember` when passing them to a composable. The library
+supports multiple active subscriptions, including multiple call sites using the same receiver.
 
 ## 🤝 Contributing
 
