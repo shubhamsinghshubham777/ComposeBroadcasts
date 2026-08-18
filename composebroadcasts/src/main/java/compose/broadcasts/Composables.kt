@@ -7,6 +7,8 @@
 package compose.broadcasts
 
 import android.annotation.SuppressLint
+import android.Manifest
+import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -18,6 +20,9 @@ import android.os.BatteryManager
 import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
+import android.nfc.NfcAdapter
+import androidx.annotation.RequiresApi
+import androidx.annotation.RequiresPermission
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -289,6 +294,49 @@ fun rememberIsLocationEnabled(): State<Boolean> {
         listOf(CBIntentFilter(CBIntentAction.LocationModeChanged)),
         CBBroadcastReceiver(CBConstants.LOCATION_MODE.value, true),
     ) { receiverContext, _ -> fetchIsLocationEnabled(receiverContext, locationManager) }
+}
+
+/** Observes whether the device Bluetooth adapter is enabled. Requires BLUETOOTH_CONNECT on API 31+. */
+@RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+@RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+@Composable
+fun rememberIsBluetoothEnabled(): State<Boolean> {
+    val context = LocalContext.current
+    val bluetoothAdapter = remember(context) {
+        (context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager).adapter
+    }
+    return rememberBroadcastReceiverAsState(
+        bluetoothAdapter.isEnabled,
+        listOf(CBIntentFilter(CBIntentAction.BluetoothStateChanged)),
+        CBBroadcastReceiver(CBConstants.BLUETOOTH_STATE.value, true),
+    ) { _, _ -> bluetoothAdapter.isEnabled }
+}
+
+/** Observes whether the device NFC adapter is enabled. Returns false when NFC is unavailable. */
+@Composable
+fun rememberIsNfcEnabled(): State<Boolean> {
+    val context = LocalContext.current
+    val nfcAdapter = remember(context) { NfcAdapter.getDefaultAdapter(context) }
+    return rememberBroadcastReceiverAsState(
+        nfcAdapter?.isEnabled == true,
+        listOf(CBIntentFilter(CBIntentAction.NfcStateChanged)),
+        CBBroadcastReceiver(CBConstants.NFC_STATE.value, true),
+    ) { _, _ -> nfcAdapter?.isEnabled == true }
+}
+
+/** Observes whether the device is currently in Doze / device-idle mode. */
+@RequiresApi(Build.VERSION_CODES.M)
+@Composable
+fun rememberIsDeviceIdleMode(): State<Boolean> {
+    val context = LocalContext.current
+    val powerManager = remember(context) {
+        context.getSystemService(Context.POWER_SERVICE) as PowerManager
+    }
+    return rememberBroadcastReceiverAsState(
+        powerManager.isDeviceIdleMode,
+        listOf(CBIntentFilter(CBIntentAction.DeviceIdleModeChanged)),
+        CBBroadcastReceiver(CBConstants.DEVICE_IDLE_MODE.value, true),
+    ) { _, _ -> powerManager.isDeviceIdleMode }
 }
 
 @Suppress("DEPRECATION")

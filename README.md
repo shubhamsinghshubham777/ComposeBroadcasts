@@ -58,6 +58,9 @@ The library currently provides these composables:
 | `rememberCurrentInputMethod` | `State<CBInputMethodInfo?>` |
 | `rememberIsPowerSaveMode` | `State<Boolean>` |
 | `rememberIsLocationEnabled` | `State<Boolean>` |
+| `rememberIsBluetoothEnabled` | `State<Boolean>` |
+| `rememberIsNfcEnabled` | `State<Boolean>` |
+| `rememberIsDeviceIdleMode` | `State<Boolean>` |
 
 And here are some examples of how to use them in your project:
 
@@ -87,7 +90,15 @@ Text("Device is ${if (isCharging) "charging" else "not charging"}")
 ```kotlin
 val isPowerSaveMode by rememberIsPowerSaveMode()
 val isLocationEnabled by rememberIsLocationEnabled()
+val isBluetoothEnabled by rememberIsBluetoothEnabled()
+val isNfcEnabled by rememberIsNfcEnabled()
+val isDeviceIdleMode by rememberIsDeviceIdleMode()
 ```
+
+These convenience methods only observe and expose current system state. The library never requests
+permissions. The host application must declare and request any permission required by Android for
+the state it observes; `rememberIsBluetoothEnabled` requires `BLUETOOTH_CONNECT` on Android 12
+(API 31) and above.
 
 ### Observe Package Changes
 

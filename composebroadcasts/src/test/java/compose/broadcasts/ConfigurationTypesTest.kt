@@ -1,7 +1,9 @@
 package compose.broadcasts
 
 import android.content.Intent
+import android.bluetooth.BluetoothAdapter
 import android.location.LocationManager
+import android.nfc.NfcAdapter
 import android.os.PowerManager
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -19,6 +21,9 @@ class ConfigurationTypesTest {
         assertEquals(Intent.ACTION_INPUT_METHOD_CHANGED, CBIntentAction.InputMethodChanged.rawValue)
         assertEquals(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED, CBIntentAction.PowerSaveModeChanged.rawValue)
         assertEquals(LocationManager.MODE_CHANGED_ACTION, CBIntentAction.LocationModeChanged.rawValue)
+        assertEquals(BluetoothAdapter.ACTION_STATE_CHANGED, CBIntentAction.BluetoothStateChanged.rawValue)
+        assertEquals(NfcAdapter.ACTION_ADAPTER_STATE_CHANGED, CBIntentAction.NfcStateChanged.rawValue)
+        assertEquals(PowerManager.ACTION_DEVICE_IDLE_MODE_CHANGED, CBIntentAction.DeviceIdleModeChanged.rawValue)
     }
 
     @Test
